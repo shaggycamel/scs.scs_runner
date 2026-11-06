@@ -4,9 +4,9 @@ Small, language-agnostic task runner driven by `util.update_schedule`.
 
 A repo can query its own schedule and call `run()`, or a central runner can
 query several sources and call `run_sources()` with local or SSH targets.
-Python repos commonly use `scs_hub` for the query and log write; non-Python
-repos can use the `scs-run` CLI. All paths hand the selected rows to the same
-execution core, which:
+Schedulers own their database access (Python repos commonly use `scs_hub`);
+the runner itself has no database dependency. All paths hand the selected rows
+to the same execution core, which:
 
 - writes `process start` / `process end` to `util.update_log`;
 - executes each task command, continuing after failures;
@@ -29,30 +29,7 @@ Or install the package in another environment:
 pip install .
 ```
 
-The CLI needs Python 3.11+ and a Postgres driver. `psycopg2-binary` is the
-default. On hosts where that wheel is unavailable, use a pure-Python driver such
-as `pg8000` and adapt `connect()` in `src/scs_runner/cli.py`.
-
-## CLI
-
-Run from the repo root:
-
-```bash
-scs-run daily
-scs-run daily,intraday
-scs-run daily intraday
-scs-run --task mod.pts.predict
-scs-run --source scs.nba.mod.pts --all
-scs-run --list
-scs-run --dry-run
-```
-
-`source` is resolved from `--source`, then `UPDATE_LOG_SOURCE`, then the
-checkout's git remote, then `scs.runner`.
-
-The CLI reads the credentials file from `SCS_HUB_CREDENTIALS` or
-`~/.config/scs_hub_credentials.ini`, and uses `--db-section` (default
-`cockroach-write`).
+The package has no runtime dependencies.
 
 ## Schedule row
 
@@ -176,14 +153,22 @@ The `nba/mod` runner derives `source`, `task`, `command` and `Target` from
 
 ## Non-Python repo
 
-`scs-run` does the same query and log writing with psycopg2, then executes the
-commands. An R or shell repo only needs a schedule row and a cron wrapper:
+The runner is language-agnostic because it executes commands. A non-Python repo
+needs a schedule row and a scheduler that supplies the rows; it does not need a
+Python dependency of its own. A scheduler can dispatch it locally or over SSH
+through a `Target`:
 
-```bash
-#!/bin/bash
-cd "$(dirname "$0")" || exit 1
-exec scs-run daily
+```text
+source      scs.nba.mod.pts
+task        mod.pts.predict
+command     Rscript modelling/mod_exec.R
+cadence     daily
+sequence    10
 ```
+
+A repo that schedules itself uses its native driver (`DBI`/`RPostgres` for R,
+`psql` for shell) to read the same rows and write the same `util.update_log`
+shape.
 
 ## Row counts
 

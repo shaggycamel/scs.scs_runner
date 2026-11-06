@@ -1,8 +1,8 @@
 """Build rows for ``util.update_log``.
 
 The runner only builds dictionaries; the caller supplies the writer. That keeps
-``scs_hub`` (SQLAlchemy/Polars) and the non-Python CLI (psycopg2) free to use
-their own database layer.
+every scheduler's database layer (``scs_hub``, psycopg2, R DBI, ``psql``) out
+of the runner.
 """
 
 from __future__ import annotations

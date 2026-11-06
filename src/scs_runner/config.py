@@ -1,4 +1,4 @@
-"""Credentials-file helpers shared by the CLI and alerting."""
+"""Credentials-file helpers for alerting."""
 
 from __future__ import annotations
 

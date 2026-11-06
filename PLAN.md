@@ -9,6 +9,10 @@
 > `util.update_schedule.job_family = 'model'` and treats `associated_function`
 > as the repo identifier, with each repo exposing a root `__main__.py`. See
 > `nba/mod/_runner` and the multi-source section of `README.md`.
+>
+> **Update:** the standalone `scs-run` CLI and its psycopg2 dependency have been
+> removed. `scs_runner` is execution-only; each scheduler owns its own database
+> access and passes rows plus a `write_log` callback to `run()`/`run_sources()`.
 
 ## Goal
 
@@ -48,14 +52,12 @@ scs_runner/
 ├── .gitignore
 ├── src/scs_runner/
 │   ├── __init__.py          # public API: run, RunResult
-│   ├── __main__.py          # python -m scs_runner
 │   ├── config.py            # credentials INI path/section
 │   ├── models.py            # Task row mapping / RunResult
 │   ├── runner.py            # loop, bookends, failure aggregation, exit
 │   ├── execute.py           # subprocess: cwd, env, timeout, stderr capture
 │   ├── update_log.py        # update_log row keys + writer protocol
-│   ├── alerts.py            # SMTP failure summary
-│   └── cli.py               # scs-run: inline SQL + psycopg2
+│   └── alerts.py            # SMTP failure summary
 └── tests/
 ```
 
@@ -63,10 +65,9 @@ scs_runner/
 
 - package name `scs-runner`
 - import package `scs_runner`
-- console script `scs-run = "scs_runner.cli:main"`
+- no console script
 - Python `>=3.11`
-- runtime dependency: a Postgres driver (`psycopg2-binary`; `pg8000` fallback on
-  ARM if binary wheels are a problem)
+- no runtime dependencies
 - no `scs_hub`, `polars`, `nba_api`, or `nbainjuries` dependency
 
 ## Runner contract
@@ -144,7 +145,11 @@ def write_log(row):
     )
 ```
 
-## Non-Python entry point
+## Non-Python entry point (removed)
+
+The `scs-run` CLI has been removed. `scs_runner` is execution-only; non-Python
+repos are commands dispatched by a scheduler, or implement the same envelope
+with their native driver. The notes below record the original design.
 
 `scs-run daily` is run from the repo root. It:
 

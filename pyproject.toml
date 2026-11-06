@@ -4,17 +4,12 @@ version = "0.1.0"
 description = "Small task runner for util.update_schedule-driven jobs"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = [
-    "psycopg2-binary>=2.9",
-]
+dependencies = []
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8",
 ]
-
-[project.scripts]
-scs-run = "scs_runner.cli:main"
 
 [build-system]
 requires = ["hatchling"]
