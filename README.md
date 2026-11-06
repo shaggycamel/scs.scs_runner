@@ -2,9 +2,11 @@
 
 Small, language-agnostic task runner driven by `util.update_schedule`.
 
-Each repo owns its own schedule query. Python repos use `scs_hub`; non-Python
-repos use the `scs-run` CLI. Both hand the selected rows to the same execution
-core, which:
+A repo can query its own schedule and call `run()`, or a central runner can
+query several sources and call `run_sources()` with local or SSH targets.
+Python repos commonly use `scs_hub` for the query and log write; non-Python
+repos can use the `scs-run` CLI. All paths hand the selected rows to the same
+execution core, which:
 
 - writes `process start` / `process end` to `util.update_log`;
 - executes each task command, continuing after failures;
@@ -125,6 +127,52 @@ result = run(
 )
 raise SystemExit(result.exit_code)
 ```
+
+## Multiple sources and SSH
+
+`run_sources()` groups rows by `source`, orders the groups, and executes each at
+its own `Target`. A target is local (`host=None`) or remote:
+
+```python
+from scs_runner import Target, Task, run_sources
+
+tasks = [
+    Task(source="scs.nba.mod.player_archetypes", task="player_archetypes.job",
+         command="uv run --frozen --group data python __main__.py"),
+]
+targets = {
+    "scs.nba.mod.player_archetypes": Target(
+        host="jetson",
+        root="/home/oli/shaggy_camel_sports/nba/mod/player_archetypes",
+        ssh_options=("-o", "BatchMode=yes"),
+        environment={"PATH": "/home/oli/.local/bin:/usr/bin:/bin"},
+    ),
+}
+
+result = run_sources(
+    tasks,
+    source="scs.nba.mod.runner",
+    cadence="weekly",
+    write_log=write_log,
+    targets=targets,
+    bookends="source",
+)
+```
+
+Remote execution:
+
+- runs `ssh <options> <host> '<script>'` with `shlex`-quoted `cd`, env and command;
+- uses the remote `timeout` command when available;
+- sets `SCS_RESULT_FILE` to a remote temp file and reads it back with a marker;
+- distinguishes an SSH failure (`255`) from the command's exit code;
+- streams output to the runner log.
+
+`bookends="source"` writes `process start` / `process end` per source;
+`bookends="run"` writes one envelope under the run source; `bookends="none"`
+writes only task rows.
+
+The `nba/mod` runner derives `source`, `task`, `command` and `Target` from
+`util.update_schedule.job_family = 'model'` and `associated_function`.
 
 ## Non-Python repo
 

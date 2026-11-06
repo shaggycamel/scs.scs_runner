@@ -78,7 +78,12 @@ def send_failure_email(
 
     body = f"source: {source}\n\n"
     for failure in failures:
-        body += f"{failure.task}\n{failure.error}\n\n"
+        label = (
+            f"{failure.source}:{failure.task}"
+            if failure.source
+            else failure.task
+        )
+        body += f"{label}\n{failure.error}\n\n"
 
     message = (
         f"From: {settings.user}\n"

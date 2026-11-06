@@ -3,6 +3,12 @@
 > **Implementation status:** the `scs_runner` package in this repo is implemented.
 > The `util.update_schedule` migration and the database/mod repo changes below
 > are **not applied**; they remain the next steps.
+>
+> **Later addition:** `scs_runner` now also supports multi-source runs and SSH
+> targets through `run_sources()` and `Target`. The mod runner uses
+> `util.update_schedule.job_family = 'model'` and treats `associated_function`
+> as the repo identifier, with each repo exposing a root `__main__.py`. See
+> `nba/mod/_runner` and the multi-source section of `README.md`.
 
 ## Goal
 

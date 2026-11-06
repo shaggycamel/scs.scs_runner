@@ -11,6 +11,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 
@@ -83,6 +84,30 @@ class Task:
 
 
 @dataclass(frozen=True)
+class Target:
+    """Where a task command runs.
+
+    ``host`` is ``None`` for local execution and a hostname/alias for SSH. A
+    local ``root`` is resolved relative to the current directory. A remote
+    ``root`` is used as-is on the remote host.
+    """
+
+    root: str | Path = "."
+    host: str | None = None
+    ssh_options: tuple[str, ...] = ()
+    environment: Mapping[str, str] = field(default_factory=dict)
+    ssh_binary: str = "ssh"
+
+    @property
+    def is_remote(self) -> bool:
+        return self.host is not None
+
+    @classmethod
+    def local(cls, root: str | Path = ".") -> Target:
+        return cls(root=root)
+
+
+@dataclass(frozen=True)
 class TaskResult:
     """Outcome of one task."""
 
@@ -91,6 +116,7 @@ class TaskResult:
     error: str | None = None
     row_count: int | None = None
     duration_seconds: float = 0.0
+    source: str | None = None
 
 
 @dataclass(frozen=True)
@@ -99,6 +125,7 @@ class Failure:
 
     task: str
     error: str
+    source: str | None = None
 
 
 @dataclass
