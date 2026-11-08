@@ -12,8 +12,15 @@ def test_run_sources_uses_each_source_target_and_writes_bookends(tmp_path):
     rows = []
     result = run_sources(
         [
-            Task(source="scs.alpha", task="one", command='printf a > out.txt', sequence=10),
-            Task(source="scs.beta", task="two", command='printf b > out.txt', sequence=10),
+            Task(
+                source="scs.alpha",
+                task="one",
+                command="printf a > out.txt",
+                sequence=10,
+            ),
+            Task(
+                source="scs.beta", task="two", command="printf b > out.txt", sequence=10
+            ),
         ],
         source="scs.run",
         cadence="weekly",
@@ -139,9 +146,7 @@ def test_remote_result_marker_is_removed_from_output():
 def test_ssh_failure_is_reported_as_ssh_failed(tmp_path):
     fake_ssh = tmp_path / "fail-ssh"
     fake_ssh.write_text(
-        "#!/bin/sh\n"
-        "echo 'ssh: connect to host failed' >&2\n"
-        "exit 255\n",
+        "#!/bin/sh\necho 'ssh: connect to host failed' >&2\nexit 255\n",
         encoding="utf-8",
     )
     fake_ssh.chmod(0o755)
@@ -170,9 +175,7 @@ def test_ssh_target_round_trips_result_file(tmp_path):
     repo.mkdir()
     fake_ssh = tmp_path / "fake-ssh"
     fake_ssh.write_text(
-        "#!/bin/sh\n"
-        "for last; do :; done\n"
-        'exec sh -c "$last"\n',
+        '#!/bin/sh\nfor last; do :; done\nexec sh -c "$last"\n',
         encoding="utf-8",
     )
     fake_ssh.chmod(0o755)

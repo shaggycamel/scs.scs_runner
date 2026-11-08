@@ -41,7 +41,12 @@ def test_failure_does_not_stop_later_tasks(tmp_path):
     )
 
     assert not result.success
-    assert [row["task"] for row in rows] == ["process start", "bad", "good", "process end"]
+    assert [row["task"] for row in rows] == [
+        "process start",
+        "bad",
+        "good",
+        "process end",
+    ]
     assert rows[1]["success"] is False
     assert "exit code 7" in rows[1]["error_message"]
     assert "boom" in rows[1]["error_message"]

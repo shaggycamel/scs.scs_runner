@@ -309,7 +309,11 @@ def _run_group(
             logger.info("skip paused task: %s", task.task)
             continue
 
-        timeout = task.timeout_seconds if task.timeout_seconds is not None else default_timeout
+        timeout = (
+            task.timeout_seconds
+            if task.timeout_seconds is not None
+            else default_timeout
+        )
         result_file = temp_dir / f"task-{uuid.uuid4().hex}.json"
         logger.info("starting: %s", task.task)
         try:
@@ -335,7 +339,9 @@ def _run_group(
             )
             failures.append(Failure(task.task, error, source=task.source))
             results.append(
-                TaskResult(task=task.task, success=False, error=error, source=task.source)
+                TaskResult(
+                    task=task.task, success=False, error=error, source=task.source
+                )
             )
             continue
 

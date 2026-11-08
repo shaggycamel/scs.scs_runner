@@ -78,11 +78,7 @@ def send_failure_email(
 
     body = f"source: {source}\n\n"
     for failure in failures:
-        label = (
-            f"{failure.source}:{failure.task}"
-            if failure.source
-            else failure.task
-        )
+        label = f"{failure.source}:{failure.task}" if failure.source else failure.task
         body += f"{label}\n{failure.error}\n\n"
 
     message = (
@@ -112,7 +108,9 @@ def failure_alert(
     """Build the callback shape expected by ``scs_runner.run``."""
 
     def alert(failures: Sequence[Failure]) -> None:
-        send_failure_email(failures, source=source, settings=settings, ini_path=ini_path)
+        send_failure_email(
+            failures, source=source, settings=settings, ini_path=ini_path
+        )
 
     return alert
 

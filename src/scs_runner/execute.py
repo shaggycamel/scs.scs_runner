@@ -134,9 +134,7 @@ def _run_remote(
     timeout: float | None,
     result_file: Path | None,
 ) -> CommandResult:
-    remote_env = {
-        key: value for key, value in env.items() if key in _REMOTE_ENV_KEYS
-    }
+    remote_env = {key: value for key, value in env.items() if key in _REMOTE_ENV_KEYS}
     remote_env.update(target.environment)
     if task.environment:
         remote_env.update(task.environment)
