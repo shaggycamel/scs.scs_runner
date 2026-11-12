@@ -1,5 +1,9 @@
 # scs_runner + util.update_schedule plan
 
+> **Historical design record.** Current behaviour is documented in
+> [README.md](README.md). This file records the migration decisions and the
+> parts that were not applied.
+
 > **Implementation status:** the `scs_runner` package in this repo is implemented.
 > The `util.update_schedule` migration and the database/mod repo changes below
 > are **not applied**; they remain the next steps.
